@@ -40,6 +40,86 @@ ifdef WIFI_EXT_MODULE_NAME
 LOCAL_CFLAGS += -DWIFI_EXT_MODULE_NAME=\"$(WIFI_EXT_MODULE_NAME)\"
 endif
 
+
+# nano sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), nanowifi)
+LOCAL_CFLAGS += -DNANO_SDIO_WIFI_USED
+endif
+
+# ar6302 sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), ar6302)
+LOCAL_CFLAGS += -DAR6302_SDIO_WIFI_USED
+endif
+
+# ar6003 sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), ar6003)
+LOCAL_CFLAGS += -DAR6003_SDIO_WIFI_USED
+endif
+
+# usi 4329 sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), usibm01a)
+LOCAL_CFLAGS += -DUSI_BM01A_SDIO_WIFI_USED
+endif
+
+# huawei mw629v2 sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), hwmw269v2)
+LOCAL_CFLAGS += -DHWMW269V2_SDIO_WIFI_USED
+endif
+
+# huawei mw629v3 sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), hwmw269v3)
+LOCAL_CFLAGS += -DHWMW269V3_SDIO_WIFI_USED
+endif
+
+# bcm40181 sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), bcm40181)
+LOCAL_CFLAGS += -DBCM40181_SDIO_WIFI_USED
+endif
+
+# bcm40183 sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), bcm40183)
+LOCAL_CFLAGS += -DBCM40183_SDIO_WIFI_USED
+endif
+
+# samsung b23 sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), swbb23)
+LOCAL_CFLAGS += -DSWBB23_SDIO_WIFI_USED
+endif
+
+# apm 6xxx sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), apm6xxx)
+LOCAL_CFLAGS += -DAPM6xxx_SDIO_WIFI_USED
+endif
+
+# realtek usb wifi module-8188cus/8192cu
+ifeq ($(SW_BOARD_USR_WIFI), rtl8192cu)
+LOCAL_CFLAGS += -DRTL_8192CU_WIFI_USED
+LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
+endif
+
+# realtek usb wifi module-new
+ifeq ($(SW_BOARD_USR_WIFI), rtl8188eu)
+LOCAL_CFLAGS += -DRTL_8188EU_WIFI_USED
+LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
+endif
+
+# realtek sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), rtl8189es)
+LOCAL_CFLAGS += -DRTL_8189ES_WIFI_USED
+LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
+endif
+
+# realtek sdio wifi+bt module
+ifeq ($(SW_BOARD_USR_WIFI), rtl8723as)
+LOCAL_CFLAGS += -DRTL_8723AS_WIFI_USED
+LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
+endif
+
+# ralink usb wifi module
+ifeq ($(SW_BOARD_USR_WIFI), rt5370)
+LOCAL_CFLAGS += -DRAL_USB_WIFI_USED
+endif
+
 LOCAL_SRC_FILES += wifi/wifi.c
 
 ifeq ($(BOARD_HAVE_SAMSUNG_WIFI),true)

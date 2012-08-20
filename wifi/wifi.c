@@ -65,13 +65,193 @@ static char primary_iface[PROPERTY_VALUE_MAX];
 // TODO: use new ANDROID_SOCKET mechanism, once support for multiple
 // sockets is in
 
+#if defined APM6xxx_SDIO_WIFI_USED
+
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/unifi_sdio.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "unifi_sdio"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG          ""
+    #endif
+
+#elif defined AR6302_SDIO_WIFI_USED
+
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/ar6302.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "ar6000"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG         "fwpath=/system/vendor/modules"
+    #endif
+
+#elif defined AR6003_SDIO_WIFI_USED
+
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/ar6003.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "ar6000"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG         "fwpath=/system/vendor/modules"
+    #endif
+
+#elif defined USI_BM01A_SDIO_WIFI_USED
+
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/usi4329_dhd.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "dhd"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG         "firmware_path=/system/vendor/modules/usi4329_fw.bin nvram_path=/system/vendor/modules/usi4329_nvram.txt"
+    #endif
+
+#elif defined HWMW269V2_SDIO_WIFI_USED
+
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/bcm4330.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "bcm4330"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG         "firmware_path=/system/vendor/modules/bcm4330.bin nvram_path=/system/vendor/modules/bcm4330_nvram.txt"
+    #endif
+
+#elif defined HWMW269V3_SDIO_WIFI_USED
+
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/bcm4330.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "bcm4330"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG         "firmware_path=/system/vendor/modules/mw269v3_fw.bin nvram_path=/system/vendor/modules/mw269v3_nvram.txt"
+    #endif
+
+#elif defined BCM40181_SDIO_WIFI_USED
+
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/bcm40181_dhd.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "dhd"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG         "firmware_path=/system/vendor/modules/bcm40181_fw.bin nvram_path=/system/vendor/modules/bcm40181_nvram.txt"
+    #endif
+
+#elif defined BCM40183_SDIO_WIFI_USED
+
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/bcm40183_dhd.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "dhd"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG         "firmware_path=/system/vendor/modules/bcm40183_fw.bin nvram_path=/system/vendor/modules/bcm40183_nvram.txt"
+    #endif
+
+#elif defined SWBB23_SDIO_WIFI_USED
+
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/swbb23_dhd.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "dhd"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG         "firmware_path=/system/vendor/modules/swbb23_fw.bin nvram_path=/system/vendor/modules/swbb23_nvram.txt"
+    #endif
+
+#elif defined NANO_SDIO_WIFI_USED
+
+    /* nano sdio wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/nano_ksdio.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "nano_ksdio"
+    #endif
+
+    #ifndef WIFI_FIRMWARE_MODULE_PATH
+    #define WIFI_FIRMWARE_MODULE_PATH         "/system/vendor/modules/nano_if.ko"
+    #endif
+    #ifndef WIFI_FIRMWARE_MODULE_NAME
+    #define WIFI_FIRMWARE_MODULE_NAME         "nano_if"
+    #endif
+
+    #ifndef WIFI_FIRMWARE_MODULE_ARG
+    #define WIFI_FIRMWARE_MODULE_ARG          "nrx_config=/system/vendor/modules"
+    #endif
+
+static const char FIRMWARE_MODULE_NAME[]  = WIFI_FIRMWARE_MODULE_NAME;
+static const char FIRMWARE_MODULE_PATH[]  = WIFI_FIRMWARE_MODULE_PATH;
+static const char FIRMWARE_MODULE_ARG[]   = WIFI_FIRMWARE_MODULE_ARG;
+
+#elif defined RTL_8192CU_WIFI_USED
+    /* rtl8192cu usb wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8192cu.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "8192cu"
+    #endif
+
+#elif defined RTL_8188EU_WIFI_USED
+    /* rtl8188eu usb wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8188eu.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "8188eu"
+    #endif
+
+#elif defined RTL_8723AS_WIFI_USED
+    /* rtl8723AS sdio+bt wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8723as.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "8723as"
+    #endif
+
+#elif defined RTL_8189ES_WIFI_USED
+   /* rtl8189es sdio wifi */
+   #ifndef WIFI_DRIVER_MODULE_PATH
+   #define WIFI_DRIVER_MODULE_PATH          "/system/vendor/modules/8189es.ko"
+   #endif
+   #ifndef WIFI_DRIVER_MODULE_NAME
+   #define WIFI_DRIVER_MODULE_NAME          "8189es"
+   #endif
+
+#elif defined RAL_USB_WIFI_USED
+    /* ralink 3070,5370,... usb wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/rt5370sta.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "rt5370sta"
+    #endif
+
+#endif
+
 #ifndef WIFI_DRIVER_MODULE_ARG
 #define WIFI_DRIVER_MODULE_ARG          ""
 #endif
 #ifndef WIFI_FIRMWARE_LOADER
 #define WIFI_FIRMWARE_LOADER		""
 #endif
-#define WIFI_TEST_INTERFACE		"sta"
+#define WIFI_TEST_INTERFACE		"wlan0" // setprop wifi.interface wlan0
 
 #ifndef WIFI_DRIVER_FW_PATH_STA
 #define WIFI_DRIVER_FW_PATH_STA		NULL
@@ -93,6 +273,15 @@ static const char EXT_MODULE_ARG[] = "";
 #endif
 #ifdef WIFI_EXT_MODULE_PATH
 static const char EXT_MODULE_PATH[] = WIFI_EXT_MODULE_PATH;
+#endif
+
+#if defined(RTL_WIFI_VENDOR)
+#undef WIFI_DRIVER_FW_PATH_STA
+#define WIFI_DRIVER_FW_PATH_STA         "STA"
+#undef WIFI_DRIVER_FW_PATH_AP
+#define WIFI_DRIVER_FW_PATH_AP          "AP"
+#undef WIFI_DRIVER_FW_PATH_P2P
+#define WIFI_DRIVER_FW_PATH_P2P         "P2P"
 #endif
 
 #ifndef WIFI_DRIVER_FW_PATH_PARAM
@@ -259,6 +448,134 @@ int is_wifi_driver_loaded() {
 #endif
 }
 
+#define TIME_COUNT 20 // 200ms*20 = 4 seconds for completion
+#if defined(RTL_WIFI_VENDOR)
+int wifi_load_driver()
+{
+    char driver_status[PROPERTY_VALUE_MAX];
+    int  count = 0;
+   
+    char tmp_buf[200] = {0};
+    char *p_strstr  = NULL;
+    int  ret        = 0;
+    FILE *fp        = NULL;
+
+    ALOGD("Start to insmod %s.ko\n", WIFI_DRIVER_MODULE_NAME);
+
+    if (insmod(DRIVER_MODULE_PATH, DRIVER_MODULE_ARG) < 0) {
+        ALOGE("insmod %s ko failed!", WIFI_DRIVER_MODULE_NAME);
+        rmmod(DRIVER_MODULE_NAME); //it may be load driver already,try remove it.
+        return -1;
+    }
+
+    do{
+       fp=fopen("/proc/net/wireless", "r");
+       if (!fp) {
+           ALOGE("failed to fopen file: /proc/net/wireless\n");
+           property_set(DRIVER_PROP_NAME, "failed");
+           rmmod(DRIVER_MODULE_NAME); //try remove it.
+           return -1;
+       }
+       ret = fread(tmp_buf, 200, 1, fp);
+       if (ret==0){
+           ALOGD("faied to read proc/net/wireless");
+       }
+       fclose(fp);
+
+       ALOGD("loading wifi driver...");
+       p_strstr = strstr(tmp_buf, "wlan0");
+       if (p_strstr != NULL) {
+           property_set(DRIVER_PROP_NAME, "ok");
+           break;
+       }
+       usleep(200000);// 200ms
+
+   } while (count++ <= TIME_COUNT);
+
+   if(count > TIME_COUNT) {
+       ALOGE("timeout, register netdevice wlan0 failed.");
+       property_set(DRIVER_PROP_NAME, "timeout");
+       rmmod(DRIVER_MODULE_NAME);
+       return -1;
+   }
+   return 0;
+}
+#elif defined NANO_SDIO_WIFI_USED
+int wifi_load_driver()
+{
+    char driver_status[PROPERTY_VALUE_MAX];
+    int count = 100; /* wait at most 20 seconds for completion */
+
+    if (is_wifi_driver_loaded()) {
+        return 0;
+    }
+
+    ALOGD("Start to insmod nanoradio wifi fw.");
+
+    if(insmod(FIRMWARE_MODULE_PATH, FIRMWARE_MODULE_ARG) < 0) {
+        ALOGE("1.insmod nano wifi fw failed!");
+        rmmod(DRIVER_MODULE_NAME);
+        rmmod(FIRMWARE_MODULE_NAME);
+        return -1;
+    }
+
+    if (insmod(DRIVER_MODULE_PATH, DRIVER_MODULE_ARG) < 0){
+        ALOGE("2.insmod nano wifi ko failed!");
+        rmmod(FIRMWARE_MODULE_NAME);
+        return -1;
+    }
+
+    if (strcmp(FIRMWARE_LOADER,"") == 0) {
+		char tmp_buf[200] = {0};
+		FILE *profs_entry = NULL;
+		int try_time = 0;
+		do {
+			profs_entry = fopen("/proc/net/wireless", "r");
+			if(profs_entry == NULL){
+				ALOGE("open /proc/net/wireless failed!");
+				property_set(DRIVER_PROP_NAME, "failed");
+				break;
+		    }
+
+	        if( 0 == fread(tmp_buf, 200, 1, profs_entry) ){
+	            ALOGD("faied to read proc/net/wireless");
+	        }
+
+			if(NULL != strstr(tmp_buf, "wlan0")) {
+				ALOGD("insmod okay,try_time(%d)", try_time);
+			    fclose(profs_entry);
+			    profs_entry = NULL;
+			    property_set(DRIVER_PROP_NAME, "ok");
+			    break;
+			}else {
+				ALOGD("nano initial,try_time(%d)",try_time);
+				property_set(DRIVER_PROP_NAME, "failed");
+			}
+	        fclose(profs_entry);
+	        profs_entry = NULL;
+			usleep(200000);
+		}while(try_time++ <= TIME_COUNT);// 4 seconds
+    }
+    else {
+        property_set("ctl.start", FIRMWARE_LOADER);
+    }
+    sched_yield();
+    while (count-- > 0) {
+        if (property_get(DRIVER_PROP_NAME, driver_status, NULL)) {
+            if (strcmp(driver_status, "ok") == 0)
+                return 0;
+            else if (strcmp(DRIVER_PROP_NAME, "failed") == 0) {
+                wifi_unload_driver();
+                return -1;
+            }
+        }
+        usleep(200000);
+    }
+    property_set(DRIVER_PROP_NAME, "timeout");
+    wifi_unload_driver();
+    return -1;
+}
+#else
 int wifi_load_driver()
 {
 #ifdef WIFI_DRIVER_MODULE_PATH
@@ -318,12 +635,18 @@ int wifi_load_driver()
     return 0;
 #endif
 }
+#endif
 
 int wifi_unload_driver()
 {
+	ALOGD("Enter %s Function.\n", __FUNCTION__);
     usleep(200000); /* allow to finish interface down */
 #ifdef WIFI_DRIVER_MODULE_PATH
-    if (rmmod(DRIVER_MODULE_NAME) == 0) {
+    if (rmmod(DRIVER_MODULE_NAME) == 0
+#ifdef     NANO_SDIO_WIFI_USED
+            && (rmmod(FIRMWARE_MODULE_NAME) == 0)
+#endif
+        ) {
         int count = 20; /* wait at most 10 seconds for completion */
         while (count-- > 0) {
             if (!is_wifi_driver_loaded())
@@ -567,6 +890,11 @@ int wifi_start_supplicant(int p2p_supported)
     unsigned serial = 0, i;
 #endif
 
+	if (p2p_supported) {
+		//p2p_supported = 0;
+		ALOGE("Not Support Temporary,P2P feature xml has already exist.");
+	}
+
     if (p2p_supported) {
         strcpy(supplicant_name, P2P_SUPPLICANT_NAME);
         strcpy(supplicant_prop_name, P2P_PROP_NAME);
@@ -673,9 +1001,12 @@ int wifi_stop_supplicant()
     return -1;
 }
 
+#define SUPPLICANT_TIMEOUT      3000000  // microseconds
+#define SUPPLICANT_TIMEOUT_STEP  100000  // microseconds
 int wifi_connect_on_socket_path(int index, const char *path)
 {
     char supp_status[PROPERTY_VALUE_MAX] = {'\0'};
+	int  supplicant_timeout = SUPPLICANT_TIMEOUT;
 
     /* Make sure supplicant is running */
     if (!property_get(supplicant_prop_name, supp_status, NULL)
@@ -685,6 +1016,11 @@ int wifi_connect_on_socket_path(int index, const char *path)
     }
 
     ctrl_conn[index] = wpa_ctrl_open(path);
+    while (ctrl_conn[index] == NULL && supplicant_timeout > 0) {
+        usleep(SUPPLICANT_TIMEOUT_STEP);
+        supplicant_timeout -= SUPPLICANT_TIMEOUT_STEP;
+        ctrl_conn[index] = wpa_ctrl_open(path);
+    }
     if (ctrl_conn[index] == NULL) {
         ALOGE("Unable to open connection to supplicant on \"%s\": %s",
              path, strerror(errno));
@@ -908,6 +1244,7 @@ int wifi_command(const char *ifname, const char *command, char *reply, size_t *r
 
 const char *wifi_get_fw_path(int fw_type)
 {
+	ALOGD("Enter: %s function, fw_type=%d,", __func__, fw_type);
     switch (fw_type) {
     case WIFI_GET_FW_PATH_STA:
         return WIFI_DRIVER_FW_PATH_STA;
@@ -925,6 +1262,21 @@ int wifi_change_fw_path(const char *fwpath)
     int fd;
     int ret = 0;
 
+#if defined(RTL_WIFI_VENDOR)
+	static char previous_fwpath[4];
+	ALOGD("Eneter: %s, fwpath = %s.\n", __FUNCTION__, fwpath);
+	if (!fwpath)
+		return ret;
+    if(strncmp("P2P", fwpath, 3) == 0) {
+        ret = wifi_load_driver();
+    } else if(strncmp("P2P", previous_fwpath, 3) == 0) {
+        ret = wifi_unload_driver();
+    }
+
+    strncpy(previous_fwpath, fwpath, 3);
+    return ret;
+#else
+	ALOGD("Eneter: %s, fwpath = %s.\n", __FUNCTION__, fwpath);
     if (!fwpath)
         return ret;
     fd = TEMP_FAILURE_RETRY(open(WIFI_DRIVER_FW_PATH_PARAM, O_WRONLY));
@@ -939,4 +1291,5 @@ int wifi_change_fw_path(const char *fwpath)
     }
     close(fd);
     return ret;
+#endif
 }
