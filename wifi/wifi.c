@@ -139,14 +139,11 @@ static char primary_iface[PROPERTY_VALUE_MAX];
 
 #elif defined BCM40181_SDIO_WIFI_USED
 
-    #ifndef WIFI_DRIVER_MODULE_PATH
-    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/bcm40181_dhd.ko"
-    #endif
     #ifndef WIFI_DRIVER_MODULE_NAME
-    #define WIFI_DRIVER_MODULE_NAME         "dhd"
+    #define WIFI_DRIVER_MODULE_NAME         "bcmdhd"
     #endif
     #ifndef WIFI_DRIVER_MODULE_ARG
-    #define WIFI_DRIVER_MODULE_ARG         "firmware_path=/system/vendor/modules/bcm40181_fw.bin nvram_path=/system/vendor/modules/bcm40181_nvram.txt"
+    #define WIFI_DRIVER_MODULE_ARG         "firmware_path=/system/vendor/modules/fw_bcm40181a2.bin nvram_path=/system/vendor/modules/bcm40181_nvram.txt"
     #endif
 
 #elif defined BCM40183_SDIO_WIFI_USED
