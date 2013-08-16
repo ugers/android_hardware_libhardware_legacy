@@ -23,17 +23,6 @@
 #include <unistd.h>
 #include <poll.h>
 
-#ifdef USES_TI_MAC80211
-#include <dirent.h>
-#include <net/if.h>
-#include <netlink/genl/genl.h>
-#include <netlink/genl/family.h>
-#include <netlink/genl/ctrl.h>
-#include <netlink/msg.h>
-#include <netlink/attr.h>
-#include "nl80211.h"
-#endif
-
 #include "hardware_legacy/wifi.h"
 #include "libwpa_client/wpa_ctrl.h"
 
@@ -126,13 +115,6 @@ static char primary_iface[PROPERTY_VALUE_MAX];
     #define WIFI_DRIVER_MODULE_ARG         "ifname=wlan0 if2name=p2p0"
     #endif
 
-#endif
-
-#ifdef USES_TI_MAC80211
-#define P2P_INTERFACE			"p2p0"
-struct nl_sock *nl_soc;
-struct nl_cache *nl_cache;
-struct genl_family *nl80211;
 #endif
 
 #ifndef WIFI_DRIVER_MODULE_ARG
@@ -934,10 +916,16 @@ int wifi_ctrl_recv(int index, char *reply, size_t *reply_len)
     }
     if (rfds[0].revents & POLLIN) {
         return wpa_ctrl_recv(monitor_conn[index], reply, reply_len);
-    } else {
-        return -2;
+    } else if (rfds[1].revents & POLLIN) {
+        /* Close only the p2p sockets on receive side
+         * see wifi_close_supplicant_connection()
+         */
+        if (index == SECONDARY) {
+            ALOGD("close sockets %d", index);
+            wifi_close_sockets(index);
+        }
     }
-    return 0;
+    return -2;
 }
 
 int wifi_wait_on_socket(int index, char *buf, size_t buflen)
@@ -1044,9 +1032,9 @@ void wifi_close_supplicant_connection(const char *ifname)
          * STA connection does not need it since supplicant gets shutdown
          */
         TEMP_FAILURE_RETRY(write(exit_sockets[SECONDARY][0], "T", 1));
-        wifi_close_sockets(SECONDARY);
-        //closing p2p connection does not need a wait on
-        //supplicant stop
+        /* p2p sockets are closed after the monitor thread
+         * receives the terminate on the exit socket
+         */
         return;
     }
 
