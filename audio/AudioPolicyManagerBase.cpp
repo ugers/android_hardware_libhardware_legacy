@@ -16,7 +16,7 @@
  */
 
 #define LOG_TAG "AudioPolicyManagerBase"
-//#define LOG_NDEBUG 0
+#define LOG_NDEBUG 0
 
 //#define VERY_VERBOSE_LOGGING
 #ifdef VERY_VERBOSE_LOGGING
@@ -613,9 +613,7 @@ audio_io_handle_t AudioPolicyManagerBase::getOutput(AudioSystem::stream_type str
     // get which output is suitable for the specified stream. The actual routing change will happen
     // when startOutput() will be called
     SortedVector<audio_io_handle_t> outputs = getOutputsForDevice(device, mOutputs);
-
     output = selectOutput(outputs, flags);
-
     ALOGW_IF((output ==0), "getOutput() could not find output for stream %d, samplingRate %d,"
             "format %d, channels %x, flags %x", stream, samplingRate, format, channelMask, flags);
 
