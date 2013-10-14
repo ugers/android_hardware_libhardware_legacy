@@ -71,12 +71,10 @@ AudioStreamOut::~AudioStreamOut()
 }
 
 // default implementation is unsupported
-#ifndef ICS_AUDIO_BLOB
 status_t AudioStreamOut::getNextWriteTimestamp(int64_t *timestamp)
 {
     return INVALID_OPERATION;
 }
-#endif
 
 AudioStreamIn::~AudioStreamIn() {}
 
