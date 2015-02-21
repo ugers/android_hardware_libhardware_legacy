@@ -70,7 +70,7 @@ static char primary_iface[PROPERTY_VALUE_MAX];
 #if defined RTL_8192CU_WIFI_USED
     /* rtl8192cu usb wifi */
     #ifndef WIFI_DRIVER_MODULE_PATH
-    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8192cu.ko"
+    #define WIFI_DRIVER_MODULE_PATH         "/system/lib/modules/8192cu.ko"
     #endif
     #ifndef WIFI_DRIVER_MODULE_NAME
     #define WIFI_DRIVER_MODULE_NAME         "8192cu"
@@ -82,7 +82,7 @@ static char primary_iface[PROPERTY_VALUE_MAX];
 #elif defined RTL_8188EU_WIFI_USED
     /* rtl8188eu usb wifi */
     #ifndef WIFI_DRIVER_MODULE_PATH
-    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8188eu.ko"
+    #define WIFI_DRIVER_MODULE_PATH         "/system/lib/modules/8188eu.ko"
     #endif
     #ifndef WIFI_DRIVER_MODULE_NAME
     #define WIFI_DRIVER_MODULE_NAME         "8188eu"
@@ -94,7 +94,7 @@ static char primary_iface[PROPERTY_VALUE_MAX];
 #elif defined RTL_8723AS_WIFI_USED
     /* rtl8723AS sdio+bt wifi */
     #ifndef WIFI_DRIVER_MODULE_PATH
-    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8723as.ko"
+    #define WIFI_DRIVER_MODULE_PATH         "/system/lib/modules/8723as.ko"
     #endif
     #ifndef WIFI_DRIVER_MODULE_NAME
     #define WIFI_DRIVER_MODULE_NAME         "8723as"
@@ -106,7 +106,7 @@ static char primary_iface[PROPERTY_VALUE_MAX];
 #elif defined RTL_8189ES_WIFI_USED
     /* rtl8189ES sdio wifi */
     #ifndef WIFI_DRIVER_MODULE_PATH
-    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8189es.ko"
+    #define WIFI_DRIVER_MODULE_PATH         "/system/lib/modules/8189es.ko"
     #endif
     #ifndef WIFI_DRIVER_MODULE_NAME
     #define WIFI_DRIVER_MODULE_NAME         "8189es"
