@@ -349,8 +349,9 @@ int wifi_load_driver()
     char driver_status[PROPERTY_VALUE_MAX];
     int  count = 0;
    
-    char tmp_buf[200] = {0};
-    char *p_strstr  = NULL;
+    char tmp_buf[512] = {0};
+    char *p_strstr_wlan  = NULL;
+    char *p_strstr_p2p	 = NULL;
     int  ret        = 0;
     FILE *fp        = NULL;
 
@@ -370,15 +371,16 @@ int wifi_load_driver()
            rmmod(DRIVER_MODULE_NAME); //try remove it.
            return -1;
        }
-       ret = fread(tmp_buf, 200, 1, fp);
+       ret = fread(tmp_buf, sizeof(tmp_buf), 1, fp);
        if (ret==0){
            ALOGD("faied to read proc/net/wireless");
        }
        fclose(fp);
 
        ALOGD("loading wifi driver...");
-       p_strstr = strstr(tmp_buf, "wlan0");
-       if (p_strstr != NULL) {
+       p_strstr_wlan = strstr(tmp_buf, "wlan0");
+       p_strstr_p2p  = strstr(tmp_buf, "p2p0");
+       if (p_strstr_wlan != NULL && p_strstr_p2p != NULL) {
            property_set(DRIVER_PROP_NAME, "ok");
            break;
        }
@@ -400,36 +402,48 @@ int wifi_load_driver()
 #ifdef WIFI_DRIVER_MODULE_PATH
     char driver_status[PROPERTY_VALUE_MAX];
     int count = 100; /* wait at most 20 seconds for completion */
-    char module_arg2[256];
-#ifdef SAMSUNG_WIFI
-    char* type = get_samsung_wifi_type();
-#endif
 
-#ifdef WIFI_EXT_MODULE_PATH
-    if (insmod(EXT_MODULE_PATH, EXT_MODULE_ARG) < 0)
-        return -1;
-    usleep(200000);
-#endif
+    if (is_wifi_driver_loaded()) {
+        return 0;
+    }
 
-#ifdef SAMSUNG_WIFI
-    snprintf(module_arg2, sizeof(module_arg2), "%s%s", DRIVER_MODULE_ARG, type == NULL ? "" : type);
-
-    if (insmod(DRIVER_MODULE_PATH, module_arg2) < 0) {
-#else
+	ALOGD("Begin to insmod %s %s firmware!", DRIVER_MODULE_PATH, DRIVER_MODULE_ARG);
     if (insmod(DRIVER_MODULE_PATH, DRIVER_MODULE_ARG) < 0) {
-#endif
-
-#ifdef WIFI_EXT_MODULE_NAME
-        rmmod(EXT_MODULE_NAME);
-#endif
+        ALOGE("insmod %s %s firmware failed!", DRIVER_MODULE_PATH, DRIVER_MODULE_ARG);
+        rmmod(DRIVER_MODULE_NAME);//it may be load driver already,try remove it.
         return -1;
     }
 
     if (strcmp(FIRMWARE_LOADER,"") == 0) {
-#ifdef WIFI_DRIVER_LOADER_DELAY
-        usleep(WIFI_DRIVER_LOADER_DELAY);
-#endif
-        property_set(DRIVER_PROP_NAME, "ok");
+		char tmp_buf[200] = {0};
+		FILE *profs_entry = NULL;
+		int try_time = 0;
+		do {
+			profs_entry = fopen("/proc/net/wireless", "r");
+			if(profs_entry == NULL){
+				ALOGE("open /proc/net/wireless failed!");
+				property_set(DRIVER_PROP_NAME, "failed");
+				break;
+		    }
+
+	        if( 0 == fread(tmp_buf, 200, 1, profs_entry) ){
+	            ALOGD("faied to read proc/net/wireless");
+	        }
+
+			if(NULL != strstr(tmp_buf, "wlan0")) {
+				ALOGD("insmod okay,try_time(%d)", try_time);
+			    fclose(profs_entry);
+			    profs_entry = NULL;
+			    property_set(DRIVER_PROP_NAME, "ok");
+			    break;
+			}else {
+				ALOGD("initial,try_time(%d)",try_time);
+				property_set(DRIVER_PROP_NAME, "failed");
+			}
+	        fclose(profs_entry);
+	        profs_entry = NULL;
+			usleep(200000);
+		}while(try_time++ <= TIME_COUNT);// 4 seconds
     }
     else {
         property_set("ctl.start", FIRMWARE_LOADER);
@@ -439,7 +453,7 @@ int wifi_load_driver()
         if (property_get(DRIVER_PROP_NAME, driver_status, NULL)) {
             if (strcmp(driver_status, "ok") == 0)
                 return 0;
-            else if (strcmp(driver_status, "failed") == 0) {
+            else if (strcmp(DRIVER_PROP_NAME, "failed") == 0) {
                 wifi_unload_driver();
                 return -1;
             }
@@ -574,7 +588,9 @@ int update_ctrl_interface(const char *config_file) {
      * The <value> is deemed to be a directory if the "DIR=" form is used or
      * the value begins with "/".
      */
-    if ((sptr = strstr(pbuf, "ctrl_interface="))) {
+    if ((sptr = strstr(pbuf, "ctrl_interface=")) &&
+        (!strstr(pbuf, "ctrl_interface=DIR=")) &&
+        (!strstr(pbuf, "ctrl_interface=/"))) {
             char *iptr = sptr + strlen("ctrl_interface=");
             int ilen = 0;
             int mlen = strlen(ifc);
@@ -897,11 +913,6 @@ int wifi_start_supplicant(int p2p_supported)
     unsigned serial = 0, i;
 #endif
 
-	if (p2p_supported) {
-		//p2p_supported = 0;
-		ALOGE("Not Support Temporary,P2P feature xml has already exist.");
-	}
-
     if (p2p_supported) {
         strcpy(supplicant_name, P2P_SUPPLICANT_NAME);
         strcpy(supplicant_prop_name, P2P_PROP_NAME);
@@ -1003,11 +1014,6 @@ int wifi_stop_supplicant(int p2p_supported)
 {
     char supp_status[PROPERTY_VALUE_MAX] = {'\0'};
     int count = 50; /* wait at most 5 seconds for completion */
-
-	if (p2p_supported) {
-		//p2p_supported = 0;
-		ALOGE("Not Support Temporary,P2P feature xml has already exist.");
-	}
 
     if (p2p_supported) {
         strcpy(supplicant_name, P2P_SUPPLICANT_NAME);
@@ -1290,21 +1296,9 @@ int wifi_change_fw_path(const char *fwpath)
     int fd;
     int ret = 0;
 
-#if defined(RTL_WIFI_VENDOR)
-	static char previous_fwpath[4];
 	ALOGD("Eneter: %s, fwpath = %s.\n", __FUNCTION__, fwpath);
-	if (!fwpath)
-		return ret;
-    if(strncmp("P2P", fwpath, 3) == 0) {
-        ret = wifi_load_driver();
-    } else if(strncmp("P2P", previous_fwpath, 3) == 0) {
-        ret = wifi_unload_driver();
-    }
-
-    strncpy(previous_fwpath, fwpath, 3);
-    return ret;
-#else
-	ALOGD("Eneter: %s, fwpath = %s.\n", __FUNCTION__, fwpath);
+	
+#ifndef RTL_WIFI_VENDOR
     if (!fwpath)
         return ret;
     fd = TEMP_FAILURE_RETRY(open(WIFI_DRIVER_FW_PATH_PARAM, O_WRONLY));
@@ -1318,8 +1312,8 @@ int wifi_change_fw_path(const char *fwpath)
         ret = -1;
     }
     close(fd);
-    return ret;
 #endif
+    return ret;
 }
 
 int wifi_set_mode(int mode) {
