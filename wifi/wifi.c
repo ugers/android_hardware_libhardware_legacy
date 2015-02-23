@@ -1013,7 +1013,6 @@ int wifi_stop_supplicant(int p2p_supported)
 int wifi_connect_on_socket_path(const char *path)
 {
     char supp_status[PROPERTY_VALUE_MAX] = {'\0'};
-	int  supplicant_timeout = SUPPLICANT_TIMEOUT;
 
     /* Make sure supplicant is running */
     if (!property_get(supplicant_prop_name, supp_status, NULL)
