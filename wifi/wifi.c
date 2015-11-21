@@ -23,17 +23,6 @@
 #include <unistd.h>
 #include <poll.h>
 
-#ifdef USES_TI_MAC80211
-#include <dirent.h>
-#include <net/if.h>
-#include <netlink/genl/genl.h>
-#include <netlink/genl/family.h>
-#include <netlink/genl/ctrl.h>
-#include <netlink/msg.h>
-#include <netlink/attr.h>
-#include <nl80211.h>
-#endif
-
 #include "hardware_legacy/wifi.h"
 #include "libwpa_client/wpa_ctrl.h"
 
@@ -63,57 +52,111 @@ extern int init_module(void *, unsigned long, const char *);
 extern int delete_module(const char *, unsigned int);
 void wifi_close_sockets();
 
-static int wifi_mode = 0;
-
 static char primary_iface[PROPERTY_VALUE_MAX];
 // TODO: use new ANDROID_SOCKET mechanism, once support for multiple
 // sockets is in
 
-#ifdef USES_TI_MAC80211
-#define P2P_INTERFACE                   "p2p0"
-struct nl_sock *nl_soc;
-struct nl_cache *nl_cache;
-struct genl_family *nl80211;
+#if defined RTL_8188EU_WIFI_USED
+    /* rtl8188eu usb wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8188eu.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "8188eu"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG         "ifname=wlan0 if2name=p2p0"
+    #endif
+
+#elif defined RTL_8189ES_WIFI_USED
+    /* rtl8189es sdio wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8189es.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "8189es"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG         "ifname=wlan0 if2name=p2p0"
+    #endif
+
+#elif defined RTL_8723AU_WIFI_USED
+    /* rtl8723AU usb bt wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8723au.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "8723au"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG		     "ifname=wlan0 if2name=p2p0"
+    #endif
+
+#elif defined RTL_8723BS_WIFI_USED
+    /* rtl8723BS sdio+bt wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8723bs.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "8723bs"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG          "ifname=wlan0 if2name=p2p0"
+    #endif
+
+#elif defined ESPRESSIF_ESP8089_WIFI_USED
+    /* esp8089 sdio wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/esp8089.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "esp8089"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG          ""
+    #endif
+
 #endif
 
 #ifndef WIFI_DRIVER_MODULE_ARG
 #define WIFI_DRIVER_MODULE_ARG          ""
 #endif
-#ifndef WIFI_DRIVER_MODULE_AP_ARG
-#define WIFI_DRIVER_MODULE_AP_ARG       ""
-#endif
 #ifndef WIFI_FIRMWARE_LOADER
-#define WIFI_FIRMWARE_LOADER            ""
+#define WIFI_FIRMWARE_LOADER		""
 #endif
-#define WIFI_TEST_INTERFACE             "sta"
+#define WIFI_TEST_INTERFACE		"wlan0" // setprop wifi.interface wlan0
 
 #ifndef WIFI_DRIVER_FW_PATH_STA
-#define WIFI_DRIVER_FW_PATH_STA         NULL
+#define WIFI_DRIVER_FW_PATH_STA		NULL
 #endif
 #ifndef WIFI_DRIVER_FW_PATH_AP
-#define WIFI_DRIVER_FW_PATH_AP          NULL
+#define WIFI_DRIVER_FW_PATH_AP		NULL
 #endif
 #ifndef WIFI_DRIVER_FW_PATH_P2P
-#define WIFI_DRIVER_FW_PATH_P2P         NULL
+#define WIFI_DRIVER_FW_PATH_P2P		NULL
+#endif
+
+#if defined(RTL_WIFI_VENDOR)
+#undef WIFI_DRIVER_FW_PATH_STA
+#define WIFI_DRIVER_FW_PATH_STA         "STA"
+#undef WIFI_DRIVER_FW_PATH_AP
+#define WIFI_DRIVER_FW_PATH_AP          "AP"
+#undef WIFI_DRIVER_FW_PATH_P2P
+#define WIFI_DRIVER_FW_PATH_P2P         "P2P"
 #endif
 
 #ifndef WIFI_DRIVER_FW_PATH_PARAM
-#define WIFI_DRIVER_FW_PATH_PARAM       "/sys/module/wlan/parameters/fwpath"
+#define WIFI_DRIVER_FW_PATH_PARAM	"/sys/module/wlan/parameters/fwpath"
 #endif
 
-#define WIFI_DRIVER_LOADER_DELAY        1000000
+#define WIFI_DRIVER_LOADER_DELAY	1000000
 
 static const char IFACE_DIR[]           = "/data/system/wpa_supplicant";
 #ifdef WIFI_DRIVER_MODULE_PATH
-char DRIVER_MODULE_NAME[16]  = WIFI_DRIVER_MODULE_NAME;
-char DRIVER_MODULE_TAG[16]   = WIFI_DRIVER_MODULE_NAME " ";
-char DRIVER_MODULE_PATH[64]  = WIFI_DRIVER_MODULE_PATH;
-
-char BOARD_WLAN_DEVICE[16] = " ";
-char SW_BOARD_USR_WIFI[16] = " ";
-
-char DRIVER_MODULE_ARG[64]   = WIFI_DRIVER_MODULE_ARG;
-static const char DRIVER_MODULE_AP_ARG[] = WIFI_DRIVER_MODULE_AP_ARG;
+static const char DRIVER_MODULE_NAME[]  = WIFI_DRIVER_MODULE_NAME;
+static const char DRIVER_MODULE_TAG[]   = WIFI_DRIVER_MODULE_NAME " ";
+static const char DRIVER_MODULE_PATH[]  = WIFI_DRIVER_MODULE_PATH;
+static const char DRIVER_MODULE_ARG[]   = WIFI_DRIVER_MODULE_ARG;
 #endif
 static const char FIRMWARE_LOADER[]     = WIFI_FIRMWARE_LOADER;
 static const char DRIVER_PROP_NAME[]    = "wlan.driver.status";
@@ -128,7 +171,7 @@ static const char CONTROL_IFACE_PATH[]  = "/data/misc/wifi/sockets";
 static const char MODULE_FILE[]         = "/proc/modules";
 
 static const char IFNAME[]              = "IFNAME=";
-#define IFNAMELEN                       (sizeof(IFNAME) - 1)
+#define IFNAMELEN			(sizeof(IFNAME) - 1)
 static const char WPA_EVENT_IGNORE[]    = "CTRL-EVENT-IGNORE ";
 
 static const char SUPP_ENTROPY_FILE[]   = WIFI_ENTROPY_FILE;
@@ -237,160 +280,109 @@ int is_wifi_driver_loaded() {
 #endif
 }
 
-//*************************************
-void CWifiIni( char* filename)
+#define TIME_COUNT 20 // 200ms*20 = 4 seconds for completion
+#if defined(RTL_WIFI_VENDOR)
+int wifi_load_driver()
 {
+    char driver_status[PROPERTY_VALUE_MAX];
+    int  count = 0;
+   
+    char tmp_buf[512] = {0};
+    char *p_strstr_wlan  = NULL;
+    char *p_strstr_p2p	 = NULL;
+    int  ret        = 0;
+    FILE *fp        = NULL;
 
-char* path_filename="/system/etc/wifi.d/";
-char full_filename[256];
-char *estr;
-int k, i = 0;
-FILE *fd;
-char buf[1024], *pos;
+    ALOGD("Start to insmod %s.ko\n", WIFI_DRIVER_MODULE_NAME);
 
- snprintf(full_filename, sizeof(full_filename), "%s%s", path_filename, filename);
+    if (insmod(DRIVER_MODULE_PATH, DRIVER_MODULE_ARG) < 0) {
+        ALOGE("insmod %s ko failed!", WIFI_DRIVER_MODULE_NAME);
+        rmmod(DRIVER_MODULE_NAME); //it may be load driver already,try remove it.
+        return -1;
+    }
 
- fd = fopen(full_filename, "r");
- if (fd)
- {
-//        setbuffer(fd, path_filename, sizeof(path_filename));
-   while (1) {
-      estr = fgets(buf, sizeof(buf), fd);
-      if (estr == NULL)
-      {
-         if ( feof (fd) != 0)
-         {
-            break;
-         }
-         else
-         {
-            ALOGE("Unknown error reading file %s", filename);
-            break;
-         }
-      }
-                if (buf[0] == L'#' || buf[0] == L';')
-                {
-                continue;
-                }
+    do{
+       fp=fopen("/proc/net/wireless", "r");
+       if (!fp) {
+           ALOGE("failed to fopen file: /proc/net/wireless\n");
+           property_set(DRIVER_PROP_NAME, "failed");
+           rmmod(DRIVER_MODULE_NAME); //try remove it.
+           return -1;
+       }
+       ret = fread(tmp_buf, sizeof(tmp_buf), 1, fp);
+       if (ret==0){
+           ALOGD("failed to read proc/net/wireless");
+       }
+       fclose(fp);
 
-                pos = strchr(buf, '=');
-                if (!pos)
-                {
-                 continue;
-                }
+       ALOGD("loading wifi driver...");
+       p_strstr_wlan = strstr(tmp_buf, "wlan0");
+       p_strstr_p2p  = strstr(tmp_buf, "p2p0");
+       //if (p_strstr_wlan != NULL && p_strstr_p2p != NULL) {
+       if (p_strstr_wlan != NULL) {
+           property_set(DRIVER_PROP_NAME, "ok");
+           break;
+       }
+       usleep(200000);// 200ms
 
-                if (pos)
+   } while (count++ <= TIME_COUNT);
 
-
-        for (k = 0; k < strlen(pos); k++)
-         {
-          if (pos[k] == 13 || pos[k] == 10 )  {
-               pos[k] = 0;
-          }
-         }
-
-                  if (strncmp(buf, "BOARD_WLAN_DEVICE=", 18) == 0)
-                  {
-                   ALOGE("Set BOARD_WLAN_DEVICE=%s", pos+1);
-                   strcpy(BOARD_WLAN_DEVICE, pos+1);
-                  }
-
-                  if (strncmp(buf, "SW_BOARD_USR_WIFI=", 18) == 0)
-                  {
-                   ALOGE("Set SW_BOARD_USR_WIFI=%s", pos+1);
-                   strcpy(SW_BOARD_USR_WIFI, pos+1);
-                  }
-
-                  if (strncmp(buf, "DRIVER_MODULE_NAME=", 19) == 0)
-                  {
-                   ALOGE("Set DRIVER_MODULE_NAME=%s", pos+1);
-                   strcpy(DRIVER_MODULE_NAME, pos+1);
-                   ALOGE("Set DRIVER_MODULE_TAG=%s", pos+1);
-                   strcpy(DRIVER_MODULE_TAG, pos+1);
-                  }
-
-                  if (strncmp(buf, "DRIVER_MODULE_PATH=", 19) == 0)
-                  {
-                   ALOGE("Set DRIVER_MODULE_PATH=%s", pos+1);
-                   strcpy(DRIVER_MODULE_PATH, pos+1);
-                  }
-
-                  if (strncmp(buf, "WIFI_DRIVER_MODULE_ARG=", 23) == 0)
-                  {
-                   ALOGE("Set WIFI_DRIVER_MODULE_ARG=%s", pos+1);
-                   strcpy(DRIVER_MODULE_ARG, pos+1);
-                  }
+   if(count > TIME_COUNT) {
+       ALOGE("timeout, register netdevice wlan0 failed.");
+       property_set(DRIVER_PROP_NAME, "timeout");
+       rmmod(DRIVER_MODULE_NAME);
+       return -1;
    }
-
-  fclose(fd);
-
- }
- else
- {
- ALOGE("File %s not found.", filename);
- }
-
+   return 0;
 }
-//***************************************************
-
-
-
-
+#else
 int wifi_load_driver()
 {
 #ifdef WIFI_DRIVER_MODULE_PATH
-
-
-    char filename[16];
     char driver_status[PROPERTY_VALUE_MAX];
     int count = 100; /* wait at most 20 seconds for completion */
 
-    char node[50] = {'\0',};
-    char buf_vid[5] = {'\0',};
-    char buf_pid[5] = {'\0',};
-
-        DIR *dir = opendir("/sys/bus/usb/devices/");
-        struct dirent *dent;
-        if (dir != NULL) {
-                while ((dent = readdir(dir)) != NULL) {
-                    memset(node, '\0', 50);
-                    sprintf(node, "/sys/bus/usb/devices/%s/idVendor", dent->d_name);
-                    int vid_fd = open(node, O_RDONLY);
-                    memset(buf_vid, '\0', 5);
-                    memset(buf_pid, '\0', 5);
-                        if (vid_fd > 0) {
-                            read(vid_fd, buf_vid, 4);
-                              sprintf(node, "/sys/bus/usb/devices/%s/idProduct", dent->d_name);
-                              int pid_fd = open(node, O_RDONLY);
-                              read(pid_fd, buf_pid, 4);
-                              ALOGE("node = %s, vid = %s, pid = %s", node, buf_vid, buf_pid);
-                              snprintf(filename, sizeof(filename), "%s%s", buf_vid, buf_pid);
-                              CWifiIni(filename);
-                              close(vid_fd);
-                              close(pid_fd);
-                        }
-                }
-        }
-        close(dir);
-
-//  if (strcmp(DRIVER_MODULE_NAME, "") == 0 //unknown module
-//  {
-//   return -1;
-//  }
-
     if (is_wifi_driver_loaded()) {
-        ALOGE("Driver already loaded");
         return 0;
     }
 
+	ALOGD("Begin to insmod %s %s firmware!", DRIVER_MODULE_PATH, DRIVER_MODULE_ARG);
     if (insmod(DRIVER_MODULE_PATH, DRIVER_MODULE_ARG) < 0) {
-        ALOGE("Error loading driver");
+        ALOGE("insmod %s %s firmware failed!", DRIVER_MODULE_PATH, DRIVER_MODULE_ARG);
+        rmmod(DRIVER_MODULE_NAME);//it may be load driver already,try remove it.
         return -1;
     }
 
     if (strcmp(FIRMWARE_LOADER,"") == 0) {
-        /* usleep(WIFI_DRIVER_LOADER_DELAY); */
-        property_set(DRIVER_PROP_NAME, "ok");
+		char tmp_buf[200] = {0};
+		FILE *profs_entry = NULL;
+		int try_time = 0;
+		do {
+			profs_entry = fopen("/proc/net/wireless", "r");
+			if(profs_entry == NULL){
+				ALOGE("open /proc/net/wireless failed!");
+				property_set(DRIVER_PROP_NAME, "failed");
+				break;
+		    }
+
+	        if( 0 == fread(tmp_buf, 200, 1, profs_entry) ){
+	            ALOGD("faied to read proc/net/wireless");
+	        }
+
+			if(NULL != strstr(tmp_buf, "wlan0")) {
+				ALOGD("insmod okay,try_time(%d)", try_time);
+			    fclose(profs_entry);
+			    profs_entry = NULL;
+			    property_set(DRIVER_PROP_NAME, "ok");
+			    break;
+			}else {
+				ALOGD("initial,try_time(%d)",try_time);
+				property_set(DRIVER_PROP_NAME, "failed");
+			}
+	        fclose(profs_entry);
+	        profs_entry = NULL;
+			usleep(200000);
+		}while(try_time++ <= TIME_COUNT);// 4 seconds
     }
     else {
         property_set("ctl.start", FIRMWARE_LOADER);
@@ -415,9 +407,11 @@ int wifi_load_driver()
     return 0;
 #endif
 }
+#endif
 
 int wifi_unload_driver()
 {
+	ALOGD("Enter %s Function.\n", __FUNCTION__);
     usleep(200000); /* allow to finish interface down */
 #ifdef WIFI_DRIVER_MODULE_PATH
     if (rmmod(DRIVER_MODULE_NAME) == 0) {
@@ -429,9 +423,6 @@ int wifi_unload_driver()
         }
         usleep(500000); /* allow card removal */
         if (count) {
-#ifdef WIFI_EXT_MODULE_NAME
-            if (rmmod(EXT_MODULE_NAME) == 0)
-#endif
             return 0;
         }
         return -1;
@@ -637,221 +628,6 @@ int ensure_config_file_exists(const char *config_file)
     return update_ctrl_interface(config_file);
 }
 
-#ifdef USES_TI_MAC80211
-static int init_nl()
-{
-    int err;
-
-    nl_soc = nl_socket_alloc();
-    if (!nl_soc) {
-        ALOGE("Failed to allocate netlink socket.");
-        return -ENOMEM;
-    }
-
-    if (genl_connect(nl_soc)) {
-        ALOGE("Failed to connect to generic netlink.");
-        err = -ENOLINK;
-        goto out_handle_destroy;
-    }
-
-    genl_ctrl_alloc_cache(nl_soc, &nl_cache);
-    if (!nl_cache) {
-        ALOGE("Failed to allocate generic netlink cache.");
-        err = -ENOMEM;
-        goto out_handle_destroy;
-    }
-
-    nl80211 = genl_ctrl_search_by_name(nl_cache, "nl80211");
-    if (!nl80211) {
-        ALOGE("nl80211 not found.");
-        err = -ENOENT;
-        goto out_cache_free;
-    }
-
-    return 0;
-
-out_cache_free:
-    nl_cache_free(nl_cache);
-out_handle_destroy:
-    nl_socket_free(nl_soc);
-    return err;
-}
-
-static void deinit_nl()
-{
-    genl_family_put(nl80211);
-    nl_cache_free(nl_cache);
-    nl_socket_free(nl_soc);
-}
-
-// ignore the "." and ".." entries
-static int dir_filter(const struct dirent *name)
-{
-    if (0 == strcmp("..", name->d_name) ||
-        0 == strcmp(".", name->d_name))
-            return 0;
-
-    return 1;
-}
-
-// lookup the only active phy
-int phy_lookup()
-{
-    char buf[200];
-    int fd, pos;
-    struct dirent **namelist;
-    int n, i;
-
-    n = scandir("/sys/class/ieee80211", &namelist, dir_filter,
-                (int (*)(const struct dirent**, const struct dirent**))alphasort);
-    if (n != 1) {
-        ALOGE("unexpected - found %d phys in /sys/class/ieee80211", n);
-        for (i = 0; i < n; i++)
-            free(namelist[i]);
-        if (n > 0)
-            free(namelist);
-        return -1;
-    }
-
-    snprintf(buf, sizeof(buf), "/sys/class/ieee80211/%s/index",
-             namelist[0]->d_name);
-    free(namelist[0]);
-    free(namelist);
-
-    fd = open(buf, O_RDONLY);
-    if (fd < 0)
-        return -1;
-    pos = read(fd, buf, sizeof(buf) - 1);
-    if (pos < 0) {
-        close(fd);
-        return -1;
-    }
-    buf[pos] = '\0';
-    close(fd);
-    return atoi(buf);
-}
-
-int nl_error_handler(struct sockaddr_nl *nla, struct nlmsgerr *err, void *arg)
-{
-    int *ret = (int *)arg;
-    *ret = err->error;
-    return NL_STOP;
-}
-
-int nl_finish_handler(struct nl_msg *msg, void *arg)
-{
-     int *ret = (int *)arg;
-     *ret = 0;
-     return NL_SKIP;
-}
-
-int nl_ack_handler(struct nl_msg *msg, void *arg)
-{
-    int *ret = (int *)arg;
-    *ret = 0;
-    return NL_STOP;
-}
-
-static int execute_nl_interface_cmd(const char *iface,
-                                    enum nl80211_iftype type,
-                                    uint8_t cmd)
-{
-    struct nl_cb *cb;
-    struct nl_msg *msg;
-    int devidx = 0;
-    int err;
-    int add_interface = (cmd == NL80211_CMD_NEW_INTERFACE);
-
-    if (add_interface) {
-        devidx = phy_lookup();
-    } else {
-        devidx = if_nametoindex(iface);
-        if (devidx == 0) {
-            ALOGE("failed to translate ifname to idx");
-            return -errno;
-        }
-    }
-
-    msg = nlmsg_alloc();
-    if (!msg) {
-        ALOGE("failed to allocate netlink message");
-        return 2;
-    }
-
-    cb = nl_cb_alloc(NL_CB_DEFAULT);
-    if (!cb) {
-        ALOGE("failed to allocate netlink callbacks");
-        err = 2;
-        goto out_free_msg;
-    }
-
-    genlmsg_put(msg, 0, 0, genl_family_get_id(nl80211), 0, 0, cmd, 0);
-
-    if (add_interface) {
-        NLA_PUT_U32(msg, NL80211_ATTR_WIPHY, devidx);
-    } else {
-        NLA_PUT_U32(msg, NL80211_ATTR_IFINDEX, devidx);
-    }
-
-    if (add_interface) {
-        NLA_PUT_STRING(msg, NL80211_ATTR_IFNAME, iface);
-        NLA_PUT_U32(msg, NL80211_ATTR_IFTYPE, type);
-    }
-
-    err = nl_send_auto_complete(nl_soc, msg);
-    if (err < 0)
-        goto out;
-
-    err = 1;
-
-    nl_cb_err(cb, NL_CB_CUSTOM, nl_error_handler, &err);
-    nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, nl_finish_handler, &err);
-    nl_cb_set(cb, NL_CB_ACK, NL_CB_CUSTOM, nl_ack_handler, &err);
-
-    while (err > 0)
-        nl_recvmsgs(nl_soc, cb);
-out:
-    nl_cb_put(cb);
-out_free_msg:
-    nlmsg_free(msg);
-    return err;
-nla_put_failure:
-    ALOGW("building message failed");
-    return 2;
-}
-
-int add_remove_p2p_interface(int add)
-{
-    int ret;
-
-    ret = init_nl();
-    if (ret != 0)
-        return ret;
-
-    if (add) {
-        ret = execute_nl_interface_cmd(P2P_INTERFACE, NL80211_IFTYPE_STATION,
-                                       NL80211_CMD_NEW_INTERFACE);
-        if (ret != 0) {
-            ALOGE("could not add P2P interface: %d", ret);
-            goto cleanup;
-        }
-    } else {
-        ret = execute_nl_interface_cmd(P2P_INTERFACE, NL80211_IFTYPE_STATION,
-                                       NL80211_CMD_DEL_INTERFACE);
-        if (ret != 0) {
-            ALOGE("could not remove P2P interface: %d", ret);
-            goto cleanup;
-        }
-    }
-
-    ALOGD("added/removed p2p interface. add: %d", add);
-
-cleanup:
-    deinit_nl();
-    return ret;
-}
-#endif /* USES_TI_MAC80211 */
-
 int wifi_start_supplicant(int p2p_supported)
 {
     char supp_status[PROPERTY_VALUE_MAX] = {'\0'};
@@ -891,13 +667,6 @@ int wifi_start_supplicant(int p2p_supported)
     if (ensure_entropy_file_exists() < 0) {
         ALOGE("Wi-Fi entropy file was not created");
     }
-
-#ifdef USES_TI_MAC80211
-    if (p2p_supported && add_remove_p2p_interface(1) < 0) {
-        ALOGE("Wi-Fi - could not create p2p interface");
-        return -1;
-    }
-#endif
 
     /* Clear out any stale socket files that might be left over. */
     wpa_ctrl_cleanup();
@@ -967,13 +736,6 @@ int wifi_stop_supplicant(int p2p_supported)
         return 0;
     }
 
-#ifdef USES_TI_MAC80211
-    if (p2p_supported && add_remove_p2p_interface(0) < 0) {
-        ALOGE("Wi-Fi - could not remove p2p interface");
-        return -1;
-    }
-#endif
-
     property_set("ctl.stop", supplicant_name);
     sched_yield();
 
@@ -988,9 +750,12 @@ int wifi_stop_supplicant(int p2p_supported)
     return -1;
 }
 
+#define SUPPLICANT_TIMEOUT      3000000  // microseconds
+#define SUPPLICANT_TIMEOUT_STEP  100000  // microseconds
 int wifi_connect_on_socket_path(const char *path)
 {
     char supp_status[PROPERTY_VALUE_MAX] = {'\0'};
+    int  supplicant_timeout = SUPPLICANT_TIMEOUT;
 
     /* Make sure supplicant is running */
     if (!property_get(supplicant_prop_name, supp_status, NULL)
@@ -1000,6 +765,11 @@ int wifi_connect_on_socket_path(const char *path)
     }
 
     ctrl_conn = wpa_ctrl_open(path);
+    while (ctrl_conn == NULL && supplicant_timeout > 0){
+        usleep(SUPPLICANT_TIMEOUT_STEP);
+        supplicant_timeout -= SUPPLICANT_TIMEOUT_STEP;
+        ctrl_conn = wpa_ctrl_open(path);
+    }
     if (ctrl_conn == NULL) {
         ALOGE("Unable to open connection to supplicant on \"%s\": %s",
              path, strerror(errno));
@@ -1120,9 +890,9 @@ int wifi_wait_on_socket(char *buf, size_t buflen)
     /*
      * Events strings are in the format
      *
-     *     IFNAME=iface <N>CTRL-EVENT-XXX
+     *     IFNAME=iface <N>CTRL-EVENT-XXX 
      *        or
-     *     <N>CTRL-EVENT-XXX
+     *     <N>CTRL-EVENT-XXX 
      *
      * where N is the message level in numerical form (0=VERBOSE, 1=DEBUG,
      * etc.) and XXX is the event name. The level information is not useful
@@ -1208,6 +978,7 @@ int wifi_command(const char *command, char *reply, size_t *reply_len)
 
 const char *wifi_get_fw_path(int fw_type)
 {
+	ALOGD("Enter: %s function, fw_type=%d,", __func__, fw_type);
     switch (fw_type) {
     case WIFI_GET_FW_PATH_STA:
         return WIFI_DRIVER_FW_PATH_STA;
@@ -1225,7 +996,9 @@ int wifi_change_fw_path(const char *fwpath)
     int fd;
     int ret = 0;
 
-#if !defined(WIFI_VENDOR_REALTEK)
+    ALOGD("Eneter: %s, fwpath = %s.\n", __FUNCTION__, fwpath);
+
+#ifndef RTL_WIFI_VENDOR
     if (!fwpath)
         return ret;
     fd = TEMP_FAILURE_RETRY(open(WIFI_DRIVER_FW_PATH_PARAM, O_WRONLY));
@@ -1241,9 +1014,4 @@ int wifi_change_fw_path(const char *fwpath)
     close(fd);
 #endif
     return ret;
-}
-
-int wifi_set_mode(int mode) {
-    wifi_mode = mode;
-    return 0;
 }
