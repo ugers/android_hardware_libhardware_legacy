@@ -1,8 +1,5 @@
 # Copyright 2006 The Android Open Source Project
 
-LOCAL_CFLAGS += -DCONFIG_CTRL_IFACE_CLIENT_DIR=\"/data/misc/wifi/sockets\"
-LOCAL_CFLAGS += -DCONFIG_CTRL_IFACE_CLIENT_PREFIX=\"wpa_ctrl_\"
-
 ifdef WIFI_DRIVER_MODULE_PATH
 LOCAL_CFLAGS += -DWIFI_DRIVER_MODULE_PATH=\"$(WIFI_DRIVER_MODULE_PATH)\"
 endif
@@ -28,7 +25,35 @@ ifdef WIFI_DRIVER_FW_PATH_PARAM
 LOCAL_CFLAGS += -DWIFI_DRIVER_FW_PATH_PARAM=\"$(WIFI_DRIVER_FW_PATH_PARAM)\"
 endif
 
+# realtek usb wifi module-new
+ifeq ($(SW_BOARD_USR_WIFI), rtl8188eu)
+LOCAL_CFLAGS += -DRTL_8188EU_WIFI_USED
 LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
+endif
+
+# realtek sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), rtl8189es)
+LOCAL_CFLAGS += -DRTL_8189ES_WIFI_USED
+LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
+endif
+
+# realtek sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), rtl8723au)
+LOCAL_CFLAGS += -DRTL_8723AU_WIFI_USED
+LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
+endif
+
+#realtek sdio wifi+bt module
+ifeq ($(SW_BOARD_USR_WIFI), rtl8723bs)
+LOCAL_CFLAGS += -DRTL_8723BS_WIFI_USED
+LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
+endif
+
+#espressif sdio wifi module
+ifeq ($(SW_BOARD_USR_WIFI), esp8089)
+LOCAL_CFLAGS += -DESPRESSIF_ESP8089_WIFI_USED
+endif
+
 
 LOCAL_SRC_FILES += wifi/wifi.c
 

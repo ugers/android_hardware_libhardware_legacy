@@ -52,28 +52,14 @@ extern int init_module(void *, unsigned long, const char *);
 extern int delete_module(const char *, unsigned int);
 void wifi_close_sockets();
 
-static int wifi_mode = 0;
-
 static char primary_iface[PROPERTY_VALUE_MAX];
 // TODO: use new ANDROID_SOCKET mechanism, once support for multiple
 // sockets is in
 
-#if defined RTL_8192CU_WIFI_USED
-    /* rtl8192cu usb wifi */
-    #ifndef WIFI_DRIVER_MODULE_PATH
-    #define WIFI_DRIVER_MODULE_PATH         "/system/lib/modules/8192cu.ko"
-    #endif
-    #ifndef WIFI_DRIVER_MODULE_NAME
-    #define WIFI_DRIVER_MODULE_NAME         "8192cu"
-    #endif
-    #ifndef WIFI_DRIVER_MODULE_ARG
-    #define WIFI_DRIVER_MODULE_ARG         "ifname=wlan0 if2name=p2p0"
-    #endif
-
-#elif defined RTL_8188EU_WIFI_USED
+#if defined RTL_8188EU_WIFI_USED
     /* rtl8188eu usb wifi */
     #ifndef WIFI_DRIVER_MODULE_PATH
-    #define WIFI_DRIVER_MODULE_PATH         "/system/lib/modules/8188eu.ko"
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8188eu.ko"
     #endif
     #ifndef WIFI_DRIVER_MODULE_NAME
     #define WIFI_DRIVER_MODULE_NAME         "8188eu"
@@ -82,22 +68,10 @@ static char primary_iface[PROPERTY_VALUE_MAX];
     #define WIFI_DRIVER_MODULE_ARG         "ifname=wlan0 if2name=p2p0"
     #endif
 
-#elif defined RTL_8723AS_WIFI_USED
-    /* rtl8723AS sdio+bt wifi */
-    #ifndef WIFI_DRIVER_MODULE_PATH
-    #define WIFI_DRIVER_MODULE_PATH         "/system/lib/modules/8723as.ko"
-    #endif
-    #ifndef WIFI_DRIVER_MODULE_NAME
-    #define WIFI_DRIVER_MODULE_NAME         "8723as"
-    #endif
-    #ifndef WIFI_DRIVER_MODULE_ARG
-    #define WIFI_DRIVER_MODULE_ARG         "ifname=wlan0 if2name=p2p0"
-    #endif
-
 #elif defined RTL_8189ES_WIFI_USED
-    /* rtl8189ES sdio wifi */
+    /* rtl8189es sdio wifi */
     #ifndef WIFI_DRIVER_MODULE_PATH
-    #define WIFI_DRIVER_MODULE_PATH         "/system/lib/modules/8189es.ko"
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8189es.ko"
     #endif
     #ifndef WIFI_DRIVER_MODULE_NAME
     #define WIFI_DRIVER_MODULE_NAME         "8189es"
@@ -106,13 +80,46 @@ static char primary_iface[PROPERTY_VALUE_MAX];
     #define WIFI_DRIVER_MODULE_ARG         "ifname=wlan0 if2name=p2p0"
     #endif
 
+#elif defined RTL_8723AU_WIFI_USED
+    /* rtl8723AU usb bt wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8723au.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "8723au"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG		     "ifname=wlan0 if2name=p2p0"
+    #endif
+
+#elif defined RTL_8723BS_WIFI_USED
+    /* rtl8723BS sdio+bt wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8723bs.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "8723bs"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG          "ifname=wlan0 if2name=p2p0"
+    #endif
+
+#elif defined ESPRESSIF_ESP8089_WIFI_USED
+    /* esp8089 sdio wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/esp8089.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "esp8089"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG          ""
+    #endif
+
 #endif
 
 #ifndef WIFI_DRIVER_MODULE_ARG
 #define WIFI_DRIVER_MODULE_ARG          ""
-#endif
-#ifndef WIFI_DRIVER_MODULE_AP_ARG
-#define WIFI_DRIVER_MODULE_AP_ARG       ""
 #endif
 #ifndef WIFI_FIRMWARE_LOADER
 #define WIFI_FIRMWARE_LOADER		""
@@ -138,21 +145,11 @@ static char primary_iface[PROPERTY_VALUE_MAX];
 #define WIFI_DRIVER_FW_PATH_P2P         "P2P"
 #endif
 
-#ifdef WIFI_EXT_MODULE_NAME
-static const char EXT_MODULE_NAME[] = WIFI_EXT_MODULE_NAME;
-#ifdef WIFI_EXT_MODULE_ARG
-static const char EXT_MODULE_ARG[] = WIFI_EXT_MODULE_ARG;
-#else
-static const char EXT_MODULE_ARG[] = "";
-#endif
-#endif
-#ifdef WIFI_EXT_MODULE_PATH
-static const char EXT_MODULE_PATH[] = WIFI_EXT_MODULE_PATH;
-#endif
-
 #ifndef WIFI_DRIVER_FW_PATH_PARAM
 #define WIFI_DRIVER_FW_PATH_PARAM	"/sys/module/wlan/parameters/fwpath"
 #endif
+
+#define WIFI_DRIVER_LOADER_DELAY	1000000
 
 static const char IFACE_DIR[]           = "/data/system/wpa_supplicant";
 #ifdef WIFI_DRIVER_MODULE_PATH
@@ -160,7 +157,6 @@ static const char DRIVER_MODULE_NAME[]  = WIFI_DRIVER_MODULE_NAME;
 static const char DRIVER_MODULE_TAG[]   = WIFI_DRIVER_MODULE_NAME " ";
 static const char DRIVER_MODULE_PATH[]  = WIFI_DRIVER_MODULE_PATH;
 static const char DRIVER_MODULE_ARG[]   = WIFI_DRIVER_MODULE_ARG;
-static const char DRIVER_MODULE_AP_ARG[] = WIFI_DRIVER_MODULE_AP_ARG;
 #endif
 static const char FIRMWARE_LOADER[]     = WIFI_FIRMWARE_LOADER;
 static const char DRIVER_PROP_NAME[]    = "wlan.driver.status";
@@ -174,6 +170,10 @@ static const char P2P_CONFIG_FILE[]     = "/data/misc/wifi/p2p_supplicant.conf";
 static const char CONTROL_IFACE_PATH[]  = "/data/misc/wifi/sockets";
 static const char MODULE_FILE[]         = "/proc/modules";
 
+static const char IFNAME[]              = "IFNAME=";
+#define IFNAMELEN			(sizeof(IFNAME) - 1)
+static const char WPA_EVENT_IGNORE[]    = "CTRL-EVENT-IGNORE ";
+
 static const char SUPP_ENTROPY_FILE[]   = WIFI_ENTROPY_FILE;
 static unsigned char dummy_key[21] = { 0x02, 0x11, 0xbe, 0x33, 0x43, 0x35,
                                        0x68, 0x47, 0x84, 0x99, 0xa9, 0x2b,
@@ -184,16 +184,6 @@ static unsigned char dummy_key[21] = { 0x02, 0x11, 0xbe, 0x33, 0x43, 0x35,
 static char supplicant_name[PROPERTY_VALUE_MAX];
 /* Is either SUPP_PROP_NAME or P2P_PROP_NAME */
 static char supplicant_prop_name[PROPERTY_KEY_MAX];
-
-static int is_primary_interface(const char *ifname)
-{
-    //Treat NULL as primary interface to allow control
-    //on STA without an interface
-    if (ifname == NULL || !strncmp(ifname, primary_iface, strlen(primary_iface))) {
-        return 1;
-    }
-    return 0;
-}
 
 static int insmod(const char *filename, const char *args)
 {
@@ -297,8 +287,9 @@ int wifi_load_driver()
     char driver_status[PROPERTY_VALUE_MAX];
     int  count = 0;
    
-    char tmp_buf[200] = {0};
-    char *p_strstr  = NULL;
+    char tmp_buf[512] = {0};
+    char *p_strstr_wlan  = NULL;
+    char *p_strstr_p2p	 = NULL;
     int  ret        = 0;
     FILE *fp        = NULL;
 
@@ -318,15 +309,16 @@ int wifi_load_driver()
            rmmod(DRIVER_MODULE_NAME); //try remove it.
            return -1;
        }
-       ret = fread(tmp_buf, 200, 1, fp);
+       ret = fread(tmp_buf, sizeof(tmp_buf), 1, fp);
        if (ret==0){
-           ALOGD("faied to read proc/net/wireless");
+           ALOGD("failed to read proc/net/wireless");
        }
        fclose(fp);
 
        ALOGD("loading wifi driver...");
-       p_strstr = strstr(tmp_buf, "wlan0");
-       if (p_strstr != NULL) {
+       p_strstr_wlan = strstr(tmp_buf, "wlan0");
+       p_strstr_p2p  = strstr(tmp_buf, "p2p0");
+       if (p_strstr_wlan != NULL && p_strstr_p2p != NULL) {
            property_set(DRIVER_PROP_NAME, "ok");
            break;
        }
@@ -348,36 +340,48 @@ int wifi_load_driver()
 #ifdef WIFI_DRIVER_MODULE_PATH
     char driver_status[PROPERTY_VALUE_MAX];
     int count = 100; /* wait at most 20 seconds for completion */
-    char module_arg2[256];
-#ifdef SAMSUNG_WIFI
-    char* type = get_samsung_wifi_type();
-#endif
 
-#ifdef WIFI_EXT_MODULE_PATH
-    if (insmod(EXT_MODULE_PATH, EXT_MODULE_ARG) < 0)
-        return -1;
-    usleep(200000);
-#endif
+    if (is_wifi_driver_loaded()) {
+        return 0;
+    }
 
-#ifdef SAMSUNG_WIFI
-    snprintf(module_arg2, sizeof(module_arg2), "%s%s", DRIVER_MODULE_ARG, type == NULL ? "" : type);
-
-    if (insmod(DRIVER_MODULE_PATH, module_arg2) < 0) {
-#else
+	ALOGD("Begin to insmod %s %s firmware!", DRIVER_MODULE_PATH, DRIVER_MODULE_ARG);
     if (insmod(DRIVER_MODULE_PATH, DRIVER_MODULE_ARG) < 0) {
-#endif
-
-#ifdef WIFI_EXT_MODULE_NAME
-        rmmod(EXT_MODULE_NAME);
-#endif
+        ALOGE("insmod %s %s firmware failed!", DRIVER_MODULE_PATH, DRIVER_MODULE_ARG);
+        rmmod(DRIVER_MODULE_NAME);//it may be load driver already,try remove it.
         return -1;
     }
 
     if (strcmp(FIRMWARE_LOADER,"") == 0) {
-#ifdef WIFI_DRIVER_LOADER_DELAY
-        usleep(WIFI_DRIVER_LOADER_DELAY);
-#endif
-        property_set(DRIVER_PROP_NAME, "ok");
+		char tmp_buf[200] = {0};
+		FILE *profs_entry = NULL;
+		int try_time = 0;
+		do {
+			profs_entry = fopen("/proc/net/wireless", "r");
+			if(profs_entry == NULL){
+				ALOGE("open /proc/net/wireless failed!");
+				property_set(DRIVER_PROP_NAME, "failed");
+				break;
+		    }
+
+	        if( 0 == fread(tmp_buf, 200, 1, profs_entry) ){
+	            ALOGD("faied to read proc/net/wireless");
+	        }
+
+			if(NULL != strstr(tmp_buf, "wlan0")) {
+				ALOGD("insmod okay,try_time(%d)", try_time);
+			    fclose(profs_entry);
+			    profs_entry = NULL;
+			    property_set(DRIVER_PROP_NAME, "ok");
+			    break;
+			}else {
+				ALOGD("initial,try_time(%d)",try_time);
+				property_set(DRIVER_PROP_NAME, "failed");
+			}
+	        fclose(profs_entry);
+	        profs_entry = NULL;
+			usleep(200000);
+		}while(try_time++ <= TIME_COUNT);// 4 seconds
     }
     else {
         property_set("ctl.start", FIRMWARE_LOADER);
@@ -418,9 +422,6 @@ int wifi_unload_driver()
         }
         usleep(500000); /* allow card removal */
         if (count) {
-#ifdef WIFI_EXT_MODULE_NAME
-            if (rmmod(EXT_MODULE_NAME) == 0)
-#endif
             return 0;
         }
         return -1;
@@ -484,6 +485,7 @@ int update_ctrl_interface(const char *config_file) {
     char *pbuf;
     char *sptr;
     struct stat sb;
+    int ret;
 
     if (stat(config_file, &sb) != 0)
         return -1;
@@ -510,7 +512,8 @@ int update_ctrl_interface(const char *config_file) {
     } else {
         strcpy(ifc, CONTROL_IFACE_PATH);
     }
-
+    /* Assume file is invalid to begin with */
+    ret = -1;
     /*
      * if there is a "ctrl_interface=<value>" entry, re-write it ONLY if it is
      * NOT a directory.  The non-directory value option is an Android add-on
@@ -522,30 +525,34 @@ int update_ctrl_interface(const char *config_file) {
      * the value begins with "/".
      */
     if ((sptr = strstr(pbuf, "ctrl_interface="))) {
-        char *iptr = sptr + strlen("ctrl_interface=");
-        int ilen = 0;
-        int mlen = strlen(ifc);
-        int nwrite;
-        if (strncmp(ifc, iptr, mlen) != 0) {
-            ALOGE("ctrl_interface != %s", ifc);
-            while (((ilen + (iptr - pbuf)) < nread) && (iptr[ilen] != '\n'))
-                ilen++;
-            mlen = ((ilen >= mlen) ? ilen : mlen) + 1;
-            memmove(iptr + mlen, iptr + ilen + 1, nread - (iptr + ilen + 1 - pbuf));
-            memset(iptr, '\n', mlen);
-            memcpy(iptr, ifc, strlen(ifc));
-            destfd = TEMP_FAILURE_RETRY(open(config_file, O_RDWR, 0660));
-            if (destfd < 0) {
-                ALOGE("Cannot update \"%s\": %s", config_file, strerror(errno));
-                free(pbuf);
-                return -1;
+        ret = 0;
+        if ((!strstr(pbuf, "ctrl_interface=DIR=")) &&
+                (!strstr(pbuf, "ctrl_interface=/"))) {
+            char *iptr = sptr + strlen("ctrl_interface=");
+            int ilen = 0;
+            int mlen = strlen(ifc);
+            int nwrite;
+            if (strncmp(ifc, iptr, mlen) != 0) {
+                ALOGE("ctrl_interface != %s", ifc);
+                while (((ilen + (iptr - pbuf)) < nread) && (iptr[ilen] != '\n'))
+                    ilen++;
+                mlen = ((ilen >= mlen) ? ilen : mlen) + 1;
+                memmove(iptr + mlen, iptr + ilen + 1, nread - (iptr + ilen + 1 - pbuf));
+                memset(iptr, '\n', mlen);
+                memcpy(iptr, ifc, strlen(ifc));
+                destfd = TEMP_FAILURE_RETRY(open(config_file, O_RDWR, 0660));
+                if (destfd < 0) {
+                    ALOGE("Cannot update \"%s\": %s", config_file, strerror(errno));
+                    free(pbuf);
+                    return -1;
+                }
+                TEMP_FAILURE_RETRY(write(destfd, pbuf, nread + mlen - ilen -1));
+                close(destfd);
             }
-            TEMP_FAILURE_RETRY(write(destfd, pbuf, nread + mlen - ilen -1));
-            close(destfd);
         }
     }
     free(pbuf);
-    return 0;
+    return ret;
 }
 
 int ensure_config_file_exists(const char *config_file)
@@ -563,9 +570,13 @@ int ensure_config_file_exists(const char *config_file)
             ALOGE("Cannot set RW to \"%s\": %s", config_file, strerror(errno));
             return -1;
         }
-        /* return if filesize is at least 10 bytes */
-        if (stat(config_file, &sb) == 0 && sb.st_size > 10) {
-            return update_ctrl_interface(config_file);
+        /* return if we were able to update control interface properly */
+        if (update_ctrl_interface(config_file) >=0) {
+            return 0;
+        } else {
+            /* This handles the scenario where the file had bad data
+             * for some reason. We continue and recreate the file.
+             */
         }
     } else if (errno != ENOENT) {
         ALOGE("Cannot access \"%s\": %s", config_file, strerror(errno));
@@ -616,45 +627,6 @@ int ensure_config_file_exists(const char *config_file)
     return update_ctrl_interface(config_file);
 }
 
-/**
- * wifi_wpa_ctrl_cleanup() - Delete any local UNIX domain socket files that
- * may be left over from clients that were previously connected to
- * wpa_supplicant. This keeps these files from being orphaned in the
- * event of crashes that prevented them from being removed as part
- * of the normal orderly shutdown.
- */
-void wifi_wpa_ctrl_cleanup(void)
-{
-    DIR *dir;
-    struct dirent entry;
-    struct dirent *result;
-    size_t dirnamelen;
-    size_t maxcopy;
-    char pathname[PATH_MAX];
-    char *namep;
-    char *local_socket_dir = CONFIG_CTRL_IFACE_CLIENT_DIR;
-    char *local_socket_prefix = CONFIG_CTRL_IFACE_CLIENT_PREFIX;
-
-    if ((dir = opendir(local_socket_dir)) == NULL)
-        return;
-
-    dirnamelen = (size_t)snprintf(pathname, sizeof(pathname), "%s/", local_socket_dir);
-    if (dirnamelen >= sizeof(pathname)) {
-        closedir(dir);
-        return;
-    }
-    namep = pathname + dirnamelen;
-    maxcopy = PATH_MAX - dirnamelen;
-    while (readdir_r(dir, &entry, &result) == 0 && result != NULL) {
-        if (strncmp(entry.d_name, local_socket_prefix, strlen(local_socket_prefix)) == 0) {
-            if (strlcpy(namep, entry.d_name, maxcopy) < maxcopy) {
-                unlink(pathname);
-            }
-        }
-    }
-    closedir(dir);
-}
-
 int wifi_start_supplicant(int p2p_supported)
 {
     char supp_status[PROPERTY_VALUE_MAX] = {'\0'};
@@ -663,11 +635,6 @@ int wifi_start_supplicant(int p2p_supported)
     const prop_info *pi;
     unsigned serial = 0, i;
 #endif
-
-	if (p2p_supported) {
-		//p2p_supported = 0;
-		ALOGE("Not Support Temporary,P2P feature xml has already exist.");
-	}
 
     if (p2p_supported) {
         strcpy(supplicant_name, P2P_SUPPLICANT_NAME);
@@ -701,7 +668,7 @@ int wifi_start_supplicant(int p2p_supported)
     }
 
     /* Clear out any stale socket files that might be left over. */
-    wifi_wpa_ctrl_cleanup();
+    wpa_ctrl_cleanup();
 
     /* Reset sockets used for exiting from hung state */
     exit_sockets[0] = exit_sockets[1] = -1;
@@ -719,17 +686,6 @@ int wifi_start_supplicant(int p2p_supported)
         serial = __system_property_serial(pi);
     }
 #endif
-
-
-#ifdef WIFI_DRIVER_MODULE_PATH
-    /* The ar6k driver needs the interface up in order to scan! */
-    if (!strncmp(DRIVER_MODULE_NAME, "ar6000", 6)) {
-        ifc_init();
-        //ifc_up("wlan0");
-        sleep(2);
-    }
-#endif
-
     property_get("wifi.interface", primary_iface, WIFI_TEST_INTERFACE);
 
     property_set("ctl.start", supplicant_name);
@@ -765,11 +721,6 @@ int wifi_stop_supplicant(int p2p_supported)
     char supp_status[PROPERTY_VALUE_MAX] = {'\0'};
     int count = 50; /* wait at most 5 seconds for completion */
 
-	if (p2p_supported) {
-		//p2p_supported = 0;
-		ALOGE("Not Support Temporary,P2P feature xml has already exist.");
-	}
-
     if (p2p_supported) {
         strcpy(supplicant_name, P2P_SUPPLICANT_NAME);
         strcpy(supplicant_prop_name, P2P_PROP_NAME);
@@ -798,9 +749,12 @@ int wifi_stop_supplicant(int p2p_supported)
     return -1;
 }
 
+#define SUPPLICANT_TIMEOUT      3000000  // microseconds
+#define SUPPLICANT_TIMEOUT_STEP  100000  // microseconds
 int wifi_connect_on_socket_path(const char *path)
 {
     char supp_status[PROPERTY_VALUE_MAX] = {'\0'};
+    int  supplicant_timeout = SUPPLICANT_TIMEOUT;
 
     /* Make sure supplicant is running */
     if (!property_get(supplicant_prop_name, supp_status, NULL)
@@ -810,6 +764,11 @@ int wifi_connect_on_socket_path(const char *path)
     }
 
     ctrl_conn = wpa_ctrl_open(path);
+    while (ctrl_conn == NULL && supplicant_timeout > 0){
+        usleep(SUPPLICANT_TIMEOUT_STEP);
+        supplicant_timeout -= SUPPLICANT_TIMEOUT_STEP;
+        ctrl_conn = wpa_ctrl_open(path);
+    }
     if (ctrl_conn == NULL) {
         ALOGE("Unable to open connection to supplicant on \"%s\": %s",
              path, strerror(errno));
@@ -854,7 +813,6 @@ int wifi_connect_to_supplicant()
 int wifi_send_command(const char *cmd, char *reply, size_t *reply_len)
 {
     int ret;
-
     if (ctrl_conn == NULL) {
         ALOGV("Not connected to wpa_supplicant - \"%s\" command dropped.\n", cmd);
         return -1;
@@ -894,17 +852,17 @@ int wifi_ctrl_recv(char *reply, size_t *reply_len)
         return wpa_ctrl_recv(monitor_conn, reply, reply_len);
     }
 
+    /* it is not rfds[0], then it must be rfts[1] (i.e. the exit socket)
+     * or we timed out. In either case, this call has failed ..
+     */
     return -2;
 }
 
 int wifi_wait_on_socket(char *buf, size_t buflen)
 {
     size_t nread = buflen - 1;
-    int fd;
-    fd_set rfds;
     int result;
-    struct timeval tval;
-    struct timeval *tptr;
+    char *match, *match2;
 
     if (monitor_conn == NULL) {
         return snprintf(buf, buflen, WPA_EVENT_TERMINATING " - connection closed");
@@ -914,41 +872,55 @@ int wifi_wait_on_socket(char *buf, size_t buflen)
 
     /* Terminate reception on exit socket */
     if (result == -2) {
-        strncpy(buf, WPA_EVENT_TERMINATING " - connection closed", buflen-1);
-        buf[buflen-1] = '\0';
-        return strlen(buf);
+        return snprintf(buf, buflen, WPA_EVENT_TERMINATING " - connection closed");
     }
 
     if (result < 0) {
         ALOGD("wifi_ctrl_recv failed: %s\n", strerror(errno));
-        strncpy(buf, WPA_EVENT_TERMINATING " - recv error", buflen-1);
-        buf[buflen-1] = '\0';
-        return strlen(buf);
+        return snprintf(buf, buflen, WPA_EVENT_TERMINATING " - recv error");
     }
     buf[nread] = '\0';
     /* Check for EOF on the socket */
     if (result == 0 && nread == 0) {
         /* Fabricate an event to pass up */
         ALOGD("Received EOF on supplicant socket\n");
-        strncpy(buf, WPA_EVENT_TERMINATING " - signal 0 received", buflen-1);
-        buf[buflen-1] = '\0';
-        return strlen(buf);
+        return snprintf(buf, buflen, WPA_EVENT_TERMINATING " - signal 0 received");
     }
     /*
      * Events strings are in the format
      *
+     *     IFNAME=iface <N>CTRL-EVENT-XXX 
+     *        or
      *     <N>CTRL-EVENT-XXX 
      *
      * where N is the message level in numerical form (0=VERBOSE, 1=DEBUG,
      * etc.) and XXX is the event name. The level information is not useful
      * to us, so strip it off.
      */
-    if (buf[0] == '<') {
-        char *match = strchr(buf, '>');
+
+    if (strncmp(buf, IFNAME, IFNAMELEN) == 0) {
+        match = strchr(buf, ' ');
         if (match != NULL) {
-            nread -= (match+1-buf);
-            memmove(buf, match+1, nread+1);
+            if (match[1] == '<') {
+                match2 = strchr(match + 2, '>');
+                if (match2 != NULL) {
+                    nread -= (match2 - match);
+                    memmove(match + 1, match2 + 1, nread - (match - buf) + 1);
+                }
+            }
+        } else {
+            return snprintf(buf, buflen, "%s", WPA_EVENT_IGNORE);
         }
+    } else if (buf[0] == '<') {
+        match = strchr(buf, '>');
+        if (match != NULL) {
+            nread -= (match + 1 - buf);
+            memmove(buf, match + 1, nread + 1);
+            ALOGV("supplicant generated event without interface - %s\n", buf);
+        }
+    } else {
+        /* let the event go as is! */
+        ALOGW("supplicant generated event without interface and without message level - %s\n", buf);
     }
 
     return nread;
@@ -982,7 +954,7 @@ void wifi_close_sockets()
     }
 }
 
-void wifi_close_supplicant_connection(const char *ifname)
+void wifi_close_supplicant_connection()
 {
     char supp_status[PROPERTY_VALUE_MAX] = {'\0'};
     int count = 50; /* wait at most 5 seconds to ensure init has stopped stupplicant */
@@ -1023,21 +995,9 @@ int wifi_change_fw_path(const char *fwpath)
     int fd;
     int ret = 0;
 
-#if defined(RTL_WIFI_VENDOR)
-	static char previous_fwpath[4];
-	ALOGD("Eneter: %s, fwpath = %s.\n", __FUNCTION__, fwpath);
-	if (!fwpath)
-		return ret;
-    if(strncmp("P2P", fwpath, 3) == 0) {
-        ret = wifi_load_driver();
-    } else if(strncmp("P2P", previous_fwpath, 3) == 0) {
-        ret = wifi_unload_driver();
-    }
+    ALOGD("Eneter: %s, fwpath = %s.\n", __FUNCTION__, fwpath);
 
-    strncpy(previous_fwpath, fwpath, 3);
-    return ret;
-#else
-	ALOGD("Eneter: %s, fwpath = %s.\n", __FUNCTION__, fwpath);
+#ifndef RTL_WIFI_VENDOR
     if (!fwpath)
         return ret;
     fd = TEMP_FAILURE_RETRY(open(WIFI_DRIVER_FW_PATH_PARAM, O_WRONLY));
@@ -1051,11 +1011,6 @@ int wifi_change_fw_path(const char *fwpath)
         ret = -1;
     }
     close(fd);
-    return ret;
 #endif
-}
-
-int wifi_set_mode(int mode) {
-    wifi_mode = mode;
-    return 0;
+    return ret;
 }
