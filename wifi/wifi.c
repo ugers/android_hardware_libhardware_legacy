@@ -318,7 +318,8 @@ int wifi_load_driver()
        ALOGD("loading wifi driver...");
        p_strstr_wlan = strstr(tmp_buf, "wlan0");
        p_strstr_p2p  = strstr(tmp_buf, "p2p0");
-       if (p_strstr_wlan != NULL && p_strstr_p2p != NULL) {
+       //if (p_strstr_wlan != NULL && p_strstr_p2p != NULL) {
+       if (p_strstr_wlan != NULL) {
            property_set(DRIVER_PROP_NAME, "ok");
            break;
        }
