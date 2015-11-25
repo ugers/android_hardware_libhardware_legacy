@@ -69,7 +69,7 @@ static char primary_iface[PROPERTY_VALUE_MAX];
     #endif
 
 #elif defined RTL_8192CU_WIFI_USED
-    /* rtl8189es sdio wifi */
+    /* rtl8192cu allwinner wifi */
     #ifndef WIFI_DRIVER_MODULE_PATH
     #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8192cu.ko"
     #endif
