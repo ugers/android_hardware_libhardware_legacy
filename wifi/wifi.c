@@ -68,6 +68,18 @@ static char primary_iface[PROPERTY_VALUE_MAX];
     #define WIFI_DRIVER_MODULE_ARG         "ifname=wlan0 if2name=p2p0"
     #endif
 
+#elif defined RTL_8192CU_WIFI_USED
+    /* rtl8189es sdio wifi */
+    #ifndef WIFI_DRIVER_MODULE_PATH
+    #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8192cu.ko"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_NAME
+    #define WIFI_DRIVER_MODULE_NAME         "8192cu"
+    #endif
+    #ifndef WIFI_DRIVER_MODULE_ARG
+    #define WIFI_DRIVER_MODULE_ARG         "ifname=wlan0 if2name=p2p0"
+    #endif
+    
 #elif defined RTL_8189ES_WIFI_USED
     /* rtl8189es sdio wifi */
     #ifndef WIFI_DRIVER_MODULE_PATH
