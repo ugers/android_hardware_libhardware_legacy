@@ -69,7 +69,7 @@ static char primary_iface[PROPERTY_VALUE_MAX];
     #endif
 
 #elif defined RTL_8192CU_WIFI_USED
-    /* rtl8192cu allwinner wifi */
+    /* rtl8189es sdio wifi */
     #ifndef WIFI_DRIVER_MODULE_PATH
     #define WIFI_DRIVER_MODULE_PATH         "/system/vendor/modules/8192cu.ko"
     #endif
@@ -79,7 +79,7 @@ static char primary_iface[PROPERTY_VALUE_MAX];
     #ifndef WIFI_DRIVER_MODULE_ARG
     #define WIFI_DRIVER_MODULE_ARG         "ifname=wlan0 if2name=p2p0"
     #endif
-    
+
 #elif defined RTL_8189ES_WIFI_USED
     /* rtl8189es sdio wifi */
     #ifndef WIFI_DRIVER_MODULE_PATH
@@ -990,7 +990,6 @@ int wifi_command(const char *command, char *reply, size_t *reply_len)
 
 const char *wifi_get_fw_path(int fw_type)
 {
-	ALOGD("Enter: %s function, fw_type=%d,", __func__, fw_type);
     switch (fw_type) {
     case WIFI_GET_FW_PATH_STA:
         return WIFI_DRIVER_FW_PATH_STA;

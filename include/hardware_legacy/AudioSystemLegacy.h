@@ -1,7 +1,4 @@
 /*
- * Copyright (c) 2013, The Linux Foundation. All rights reserved.
- * Not a contribution.
- *
  * Copyright (C) 2008 The Android Open Source Project
  * Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
@@ -65,13 +62,13 @@ enum audio_source {
     AUDIO_SOURCE_CAMCORDER = 5,
     AUDIO_SOURCE_VOICE_RECOGNITION = 6,
     AUDIO_SOURCE_VOICE_COMMUNICATION = 7,
-#ifdef QCOM_HARDWARE
     AUDIO_SOURCE_REMOTE_SUBMIX = 8,
+#ifdef QCOM_HARDWARE
     AUDIO_SOURCE_FM_RX = 9,
     AUDIO_SOURCE_FM_RX_A2DP = 10,
     AUDIO_SOURCE_MAX = AUDIO_SOURCE_FM_RX_A2DP,
 #else
-    AUDIO_SOURCE_MAX = AUDIO_SOURCE_VOICE_COMMUNICATION,
+    AUDIO_SOURCE_MAX = AUDIO_SOURCE_REMOTE_SUBMIX,
 #endif
 
     AUDIO_SOURCE_LIST_END  // must be last - used to validate audio source type
@@ -276,18 +273,17 @@ public:
         DEVICE_IN_AUX_DIGITAL = 0x200000,
         DEVICE_IN_VOICE_CALL = 0x400000,
         DEVICE_IN_BACK_MIC = 0x800000,
-        DEVICE_IN_AF = 0x1000000,
         DEVICE_IN_DEFAULT = 0x80000000,
 
         DEVICE_IN_ALL = (DEVICE_IN_COMMUNICATION | DEVICE_IN_AMBIENT | DEVICE_IN_BUILTIN_MIC |
                 DEVICE_IN_BLUETOOTH_SCO_HEADSET | DEVICE_IN_WIRED_HEADSET | DEVICE_IN_AUX_DIGITAL |
+                DEVICE_IN_VOICE_CALL | DEVICE_IN_BACK_MIC |
 #ifdef QCOM_HARDWARE
-                DEVICE_IN_VOICE_CALL | DEVICE_IN_BACK_MIC | DEVICE_IN_ANC_HEADSET |
-                DEVICE_IN_FM_RX | DEVICE_IN_FM_RX_A2DP | DEVICE_IN_DEFAULT |
-                DEVICE_IN_ANLG_DOCK_HEADSET | DEVICE_IN_PROXY)
-#else
-                DEVICE_IN_VOICE_CALL | DEVICE_IN_BACK_MIC | DEVICE_IN_DEFAULT)
+                DEVICE_IN_ANC_HEADSET |
+                DEVICE_IN_FM_RX | DEVICE_IN_FM_RX_A2DP |
+                DEVICE_IN_ANLG_DOCK_HEADSET | DEVICE_IN_PROXY |
 #endif
+                DEVICE_IN_DEFAULT)
     };
 
     // request to open a direct output with getOutput() (by opposition to sharing an output with other AudioTracks)
