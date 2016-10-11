@@ -25,36 +25,54 @@ ifdef WIFI_DRIVER_FW_PATH_PARAM
 LOCAL_CFLAGS += -DWIFI_DRIVER_FW_PATH_PARAM=\"$(WIFI_DRIVER_FW_PATH_PARAM)\"
 endif
 
-# realtek usb wifi module-new
-ifeq ($(SW_BOARD_USR_WIFI), rtl8188eu)
+ifdef WIFI_DRIVER_STATE_CTRL_PARAM
+LOCAL_CFLAGS += -DWIFI_DRIVER_STATE_CTRL_PARAM=\"$(WIFI_DRIVER_STATE_CTRL_PARAM)\"
+endif
+ifdef WIFI_DRIVER_STATE_ON
+LOCAL_CFLAGS += -DWIFI_DRIVER_STATE_ON=\"$(WIFI_DRIVER_STATE_ON)\"
+endif
+ifdef WIFI_DRIVER_STATE_OFF
+LOCAL_CFLAGS += -DWIFI_DRIVER_STATE_OFF=\"$(WIFI_DRIVER_STATE_OFF)\"
+endif
+# realtek usb wifi module
+ifeq ($(BOARD_USR_WIFI), rtl8188eu)
 LOCAL_CFLAGS += -DRTL_8188EU_WIFI_USED
 LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
 endif
 
-# realtek sdio wifi module
-ifeq ($(SW_BOARD_USR_WIFI), rtl8189es)
-LOCAL_CFLAGS += -DRTL_8189ES_WIFI_USED
-LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
-endif
-
-# realtek sdio wifi module
-ifeq ($(SW_BOARD_USR_WIFI), rtl8723au)
-LOCAL_CFLAGS += -DRTL_8723AU_WIFI_USED
-LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
-endif
-
-#realtek sdio wifi+bt module
-ifeq ($(SW_BOARD_USR_WIFI), rtl8723bs)
+# realtek sdio wifi+bt module
+ifeq ($(BOARD_USR_WIFI), rtl8723bs)
 LOCAL_CFLAGS += -DRTL_8723BS_WIFI_USED
 LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
 endif
 
-#espressif sdio wifi module
-ifeq ($(SW_BOARD_USR_WIFI), esp8089)
-LOCAL_CFLAGS += -DESPRESSIF_ESP8089_WIFI_USED
+# realtek sdio wifi+bt module
+ifeq ($(BOARD_USR_WIFI), rtl8723bs_vq0)
+LOCAL_CFLAGS += -DRTL_8723BS_VQ0_WIFI_USED
+LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
 endif
 
+# realtek sdio wifi+bt module
+ifeq ($(BOARD_USR_WIFI), rtl8723cs)
+LOCAL_CFLAGS += -DRTL_8723CS_WIFI_USED
+LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
+endif
 
+# realtek sdio wifi module
+ifeq ($(BOARD_USR_WIFI), rtl8189fs)
+LOCAL_CFLAGS += -DRTL_8189FS_WIFI_USED
+LOCAL_CFLAGS += -DRTL_WIFI_VENDOR
+endif
+
+#espressif sdio wifi module
+ifeq ($(BOARD_USR_WIFI), esp8089)
+LOCAL_CFLAGS += -DESPRESSIF_ESP8089_WIFI_USED
+LOCAL_CFLAGS += -DESP_WIFI_VENDOR
+endif
 LOCAL_SRC_FILES += wifi/wifi.c
 
+ifdef WPA_SUPPLICANT_VERSION
+LOCAL_CFLAGS += -DLIBWPA_CLIENT_EXISTS
+LOCAL_SHARED_LIBRARIES += libwpa_client
+endif
 LOCAL_SHARED_LIBRARIES += libnetutils
